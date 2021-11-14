@@ -1,8 +1,15 @@
 import React from 'react';
+import { PokemonForm } from './pokemon';
 
 function App() {
+  const [pokemonName, setPokemonName] = React.useState('');
+
+  function handleSubmit(newPokemonName) {
+    setPokemonName(newPokemonName);
+  }
   return (
     <div className='pokemon-info-app'>
+      <PokemonForm pokemonName={pokemonName} onSubmit={handleSubmit} />
       <hr />
       <div className='pokemon-info'></div>
     </div>
