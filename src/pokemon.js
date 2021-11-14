@@ -1,8 +1,13 @@
-import React from 'react';
+import * as React from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
-export function fetchPokemon() {
-  const name = 'Pikachu';
-  const delay = 1500;
+const formatDate = (date) =>
+  `${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')} ${String(
+    date.getSeconds()
+  ).padStart(2, '0')}.${String(date.getMilliseconds()).padStart(3, '0')}`;
+
+// the delay argument is for faking things out a bit
+function fetchPokemon(name, delay = 1500) {
   const pokemonQuery = `
     query PokemonInfo($name: String) {
       pokemon(name: $name) {
@@ -39,6 +44,7 @@ export function fetchPokemon() {
       if (response.ok) {
         const pokemon = data?.pokemon;
         if (pokemon) {
+          pokemon.fetchedAt = formatDate(new Date());
           return pokemon;
         } else {
           return Promise.reject(
@@ -46,18 +52,63 @@ export function fetchPokemon() {
           );
         }
       } else {
+        // handle the graphql errors
         const error = {
-          messaage: data?.errors?.map((e) => e.message).join('\n'),
+          message: data?.errors?.map((e) => e.message).join('\n'),
         };
         return Promise.reject(error);
       }
-    })
-    .catch((error) => {
-      console.log(error);
     });
 }
 
-export function PokemonForm({
+function PokemonInfoFallback({ name }) {
+  const initialName = React.useRef(name).current;
+  const fallbackPokemonData = {
+    name: initialName,
+    number: 'XXX',
+    image:
+      'https://media.idownloadblog.com/wp-content/uploads/2016/11/Thinking_Face_Emoji_large.png',
+    attacks: {
+      special: [
+        { name: 'Loading Attack 1', type: 'Type', damage: 'XX' },
+        { name: 'Loading Attack 2', type: 'Type', damage: 'XX' },
+      ],
+    },
+    fetchedAt: 'loading...',
+  };
+  return <PokemonDataView pokemon={fallbackPokemonData} />;
+}
+
+function PokemonDataView({ pokemon }) {
+  return (
+    <div>
+      <div className='pokemon-info__img-wrapper'>
+        <img src={pokemon.image} alt={pokemon.name} />
+      </div>
+      <section>
+        <h2>
+          {pokemon.name}
+          <sup>{pokemon.number}</sup>
+        </h2>
+      </section>
+      <section>
+        <ul>
+          {pokemon.attacks.special.map((attack) => (
+            <li key={attack.name}>
+              <label>{attack.name}</label>:{' '}
+              <span>
+                {attack.damage} <small>({attack.type})</small>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <small className='pokemon-info__fetch-time'>{pokemon.fetchedAt}</small>
+    </div>
+  );
+}
+
+function PokemonForm({
   pokemonName: externalPokemonName,
   initialPokemonName = externalPokemonName || '',
   onSubmit,
@@ -135,3 +186,25 @@ export function PokemonForm({
     </form>
   );
 }
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div role='alert'>
+      There was an error:{' '}
+      <pre style={{ whiteSpace: 'normal' }}>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
+
+function PokemonErrorBoundary(props) {
+  return <ErrorBoundary FallbackComponent={ErrorFallback} {...props} />;
+}
+
+export {
+  PokemonInfoFallback,
+  PokemonForm,
+  PokemonDataView,
+  fetchPokemon,
+  PokemonErrorBoundary,
+};
