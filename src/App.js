@@ -1,8 +1,30 @@
-import { fetchPokemon } from './pokemon';
+import React from 'react';
 
 function App() {
-  console.log(fetchPokemon());
-  return <div></div>;
+  return (
+    <div className='pokemon-info-app'>
+      <hr />
+      <div className='pokemon-info'></div>
+    </div>
+  );
 }
 
-export default App;
+function AppWithUnmountCheckbox() {
+  const [mountApp, setMountApp] = React.useState(true);
+  return (
+    <div>
+      <label>
+        <input
+          type='checkbox'
+          checked={mountApp}
+          onChange={(e) => setMountApp(e.target.checked)}
+        />{' '}
+        Mount Component
+      </label>
+      <hr />
+      {mountApp ? <App /> : null}
+    </div>
+  );
+}
+
+export default AppWithUnmountCheckbox;
