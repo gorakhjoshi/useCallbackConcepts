@@ -1,4 +1,5 @@
 // useCallback: custom hooks
+// 💯 use useCallback to empower the user to customize memoization
 
 import * as React from 'react';
 import {
@@ -26,14 +27,13 @@ function asyncReducer(state, action) {
   }
 }
 
-function useAsync(asyncCallback, initialState, dependencies) {
+function useAsync(asyncCallback, initialState) {
   const [state, dispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
     data: null,
     error: null,
     ...initialState,
   });
-
   React.useEffect(() => {
     const promise = asyncCallback();
     if (!promise) {
@@ -48,25 +48,21 @@ function useAsync(asyncCallback, initialState, dependencies) {
         dispatch({ type: 'rejected', error });
       }
     );
-    // too bad the eslint plugin can't statically analyze this :-(
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, dependencies);
-
+  }, [asyncCallback]);
   return state;
 }
 
 function PokemonInfo({ pokemonName }) {
-  const state = useAsync(
-    () => {
-      if (!pokemonName) {
-        return;
-      }
-      return fetchPokemon(pokemonName);
-    },
-    { status: pokemonName ? 'pending' : 'idle' },
-    [pokemonName]
-  );
+  const asyncCallback = React.useCallback(() => {
+    if (!pokemonName) {
+      return;
+    }
+    return fetchPokemon(pokemonName);
+  }, [pokemonName]);
 
+  const state = useAsync(asyncCallback, {
+    status: pokemonName ? 'pending' : 'idle',
+  });
   const { data: pokemon, status, error } = state;
 
   if (status === 'idle') {
