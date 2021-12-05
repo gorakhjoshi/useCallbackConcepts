@@ -2,8 +2,6 @@
 
 ## 📝 Your Notes
 
-Elaborate on your learnings here in `src/exercise/02.md`
-
 ## Background
 
 ### Memoization in general
@@ -14,38 +12,38 @@ returning that stored value when the same input is provided. Caching is a form
 of memoization. Here's a simple implementation of memoization:
 
 ```ts
-const values = {}
+const values = {};
 function addOne(num: number) {
   if (values[num] === undefined) {
-    values[num] = num + 1 // <-- here's the computation
+    values[num] = num + 1; // <-- here's the computation
   }
-  return values[num]
+  return values[num];
 }
 ```
 
 One other aspect of memoization is value referrential equality. For example:
 
 ```ts
-const dog1 = new Dog('sam')
-const dog2 = new Dog('sam')
-console.log(dog1 === dog2) // false
+const dog1 = new Dog('sam');
+const dog2 = new Dog('sam');
+console.log(dog1 === dog2); // false
 ```
 
 Even though those two dogs have the same name, they are not the same. However,
 we can use memoization to get the same dog:
 
 ```ts
-const dogs = {}
+const dogs = {};
 function getDog(name: string) {
   if (dogs[name] === undefined) {
-    dogs[name] = new Dog(name)
+    dogs[name] = new Dog(name);
   }
-  return dogs[name]
+  return dogs[name];
 }
 
-const dog1 = getDog('sam')
-const dog2 = getDog('sam')
-console.log(dog1 === dog2) // true
+const dog1 = getDog('sam');
+const dog2 = getDog('sam');
+console.log(dog1 === dog2); // true
 ```
 
 You might have noticed that our memoization examples look very similar.
@@ -53,17 +51,17 @@ Memoization is something you can implement as a generic abstraction:
 
 ```ts
 function memoize<ArgType, ReturnValue>(cb: (arg: ArgType) => ReturnValue) {
-  const cache: Record<ArgType, ReturnValue> = {}
+  const cache: Record<ArgType, ReturnValue> = {};
   return function memoized(arg: ArgType) {
     if (cache[arg] === undefined) {
-      cache[arg] = cb(arg)
+      cache[arg] = cb(arg);
     }
-    return cache[arg]
-  }
+    return cache[arg];
+  };
 }
 
-const addOne = memoize((num: number) => num + 1)
-const getDog = memoize((name: string) => new Dog(name))
+const addOne = memoize((num: number) => num + 1);
+const getDog = memoize((name: string) => new Dog(name));
 ```
 
 Our abstraction only supports one argument, if you want to make it work for any
@@ -79,8 +77,8 @@ You know the dependency list of `useEffect`? Here's a quick refresher:
 
 ```javascript
 React.useEffect(() => {
-  window.localStorage.setItem('count', count)
-}, [count]) // <-- that's the dependency list
+  window.localStorage.setItem('count', count);
+}, [count]); // <-- that's the dependency list
 ```
 
 Remember that the dependency list is how React knows whether to call your
@@ -91,10 +89,10 @@ callback doesn't get out of sync with the state of the application.
 But what happens if I use a function in my callback?
 
 ```javascript
-const updateLocalStorage = () => window.localStorage.setItem('count', count)
+const updateLocalStorage = () => window.localStorage.setItem('count', count);
 React.useEffect(() => {
-  updateLocalStorage()
-}, []) // <-- what goes in that dependency list?
+  updateLocalStorage();
+}, []); // <-- what goes in that dependency list?
 ```
 
 We could just put the `count` in the dependency list and that would
@@ -116,10 +114,10 @@ Instead, it would be much easier if we could just put the function itself in the
 dependency list:
 
 ```javascript
-const updateLocalStorage = () => window.localStorage.setItem('count', count)
+const updateLocalStorage = () => window.localStorage.setItem('count', count);
 React.useEffect(() => {
-  updateLocalStorage()
-}, [updateLocalStorage]) // <-- function as a dependency
+  updateLocalStorage();
+}, [updateLocalStorage]); // <-- function as a dependency
 ```
 
 The problem with that though it will trigger the `useEffect` to run every
@@ -133,11 +131,11 @@ it, our `useEffect` callback will be called every render!
 ```javascript
 const updateLocalStorage = React.useCallback(
   () => window.localStorage.setItem('count', count),
-  [count], // <-- yup! That's a dependency list!
-)
+  [count] // <-- yup! That's a dependency list!
+);
 React.useEffect(() => {
-  updateLocalStorage()
-}, [updateLocalStorage])
+  updateLocalStorage();
+}, [updateLocalStorage]);
 ```
 
 What that does is we pass React a function and React gives that same function
@@ -146,7 +144,7 @@ back to us... Sounds kinda useless right? Imagine:
 ```javascript
 // this is not how React actually implements this function. We're just imaginging!
 function useCallback(callback) {
-  return callback
+  return callback;
 }
 ```
 
@@ -157,13 +155,13 @@ imagine:
 
 ```javascript
 // this is not how React actually implements this function. We're just imaginging!
-let lastCallback
+let lastCallback;
 function useCallback(callback, deps) {
   if (depsChanged(deps)) {
-    lastCallback = callback
-    return callback
+    lastCallback = callback;
+    return callback;
   } else {
-    return lastCallback
+    return lastCallback;
   }
 }
 ```
@@ -179,14 +177,14 @@ just a shortcut to using `useMemo` for functions:
 const updateLocalStorage = React.useMemo(
   // useCallback saves us from this annoying double-arrow function thing:
   () => () => window.localStorage.setItem('count', count),
-  [count],
-)
+  [count]
+);
 
 // the useCallback version
 const updateLocalStorage = React.useCallback(
   () => window.localStorage.setItem('count', count),
-  [count],
-)
+  [count]
+);
 ```
 
 🦉 A common question with this is: "Why don't we just wrap every function in
@@ -198,11 +196,6 @@ const updateLocalStorage = React.useCallback(
 it's important to keep dependency lists correct.)
 
 ## Exercise
-
-Production deploys:
-
-- [Exercise](https://advanced-react-hooks.netlify.com/isolated/exercise/02.js)
-- [Final](https://advanced-react-hooks.netlify.com/isolated/final/02.js)
 
 **People tend to find this exercise more difficult,** so I strongly advise
 spending some time understanding how the code works before making any changes!
@@ -242,8 +235,6 @@ being stuck on the TypeScript.
 
 ### 1. 💯 use useCallback to empower the user to customize memoization
 
-[Production deploy](https://advanced-react-hooks.netlify.com/isolated/final/02.extra-1.js)
-
 Unfortunately, the ESLint plugin is unable to determine whether the
 `dependencies` argument is a valid argument for `useEffect` which is a shame,
 and normally I'd say just ignore it and move on. But, there's another solution
@@ -261,15 +252,15 @@ Here's another example of the `React.useCallback` API:
 ```javascript
 function ConsoleGreeting(props) {
   const greet = React.useCallback(
-    greeting => console.log(`${greeting} ${props.name}`),
-    [props.name],
-  )
+    (greeting) => console.log(`${greeting} ${props.name}`),
+    [props.name]
+  );
 
   React.useEffect(() => {
-    const helloGreeting = 'Hello'
-    greet(helloGreeting)
-  }, [greet])
-  return <div>check the console</div>
+    const helloGreeting = 'Hello';
+    greet(helloGreeting);
+  }, [greet]);
+  return <div>check the console</div>;
 }
 ```
 
@@ -287,19 +278,17 @@ See if you can make things work like this:
 // 🐨 you'll need to wrap asyncCallback in React.useCallback
 function asyncCallback() {
   if (!pokemonName) {
-    return
+    return;
   }
-  return fetchPokemon(pokemonName)
+  return fetchPokemon(pokemonName);
 }
 
 // 🐨 you'll need to update useAsync to remove the dependencies and list the
 // async callback as a dependency.
-const state = useAsync(asyncCallback)
+const state = useAsync(asyncCallback);
 ```
 
 ### 2. 💯 return a memoized `run` function from useAsync
-
-[Production deploy](https://advanced-react-hooks.netlify.com/isolated/final/02.extra-2.js)
 
 Requiring users to provide a memoized value is fine. You can document it as part
 of the API and expect people to just read the docs right? lol, that's hilarious
@@ -313,23 +302,21 @@ function that people can call in their own `useEffect` like this:
 ```javascript
 // 💰 destructuring this here now because it just felt weird to call this
 // "state" still when it's also returning a function called "run" 🙃
-const {data: pokemon, status, error, run} = useAsync()
+const { data: pokemon, status, error, run } = useAsync();
 
 React.useEffect(() => {
   if (!pokemonName) {
-    return
+    return;
   }
   // 💰 note the absense of `await` here. We're literally passing the promise
   // to `run` so `useAsync` can attach it's own `.then` handler on it to keep
   // track of the state of the promise.
-  const pokemonPromise = fetchPokemon(pokemonName)
-  run(pokemonPromise)
-}, [pokemonName, run])
+  const pokemonPromise = fetchPokemon(pokemonName);
+  run(pokemonPromise);
+}, [pokemonName, run]);
 ```
 
 ### 3. 💯 make safeDispatch with useCallback, useRef, and useEffect
-
-[Production deploy](https://advanced-react-hooks.netlify.com/isolated/final/02.extra-3.js)
 
 **NOTICE: Things have changed slightly.** The app you're running the exercises
 in was changed since the videos were recorded and you can no longer see this
@@ -388,8 +375,3 @@ dependency lists and props on memoized components (via `React.memo`, which you
 can learn more about from the performance workshop). The _only_ time it's useful
 to use `useCallback` is when the function you're memoizing is used in one of
 those two situations.
-
-## 🦉 Feedback
-
-Fill out
-[the feedback form](https://ws.kcd.im/?ws=Advanced%20React%20Hooks%20%F0%9F%94%A5&e=02%3A%20useCallback%3A%20custom%20hooks&em=).
